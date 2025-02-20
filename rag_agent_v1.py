@@ -124,7 +124,7 @@ def generate_response(user_question):
 # Main App
 # =============================================================================
 def main():
-    #st.set_page_config(page_title="Ask H[ai]di")
+    # st.set_page_config(page_title="Ask H[ai]di")
     st.header("Ask H[ai]di")
     
     # Load the knowledge base if not already loaded
@@ -146,20 +146,27 @@ def main():
         
     # Use recorded transcript if available; otherwise, use text input.
     user_question = st.session_state.get("user_question", "") or user_question_text
+
+    # Clear previous response if a new question is entered.
+    if "last_question" not in st.session_state or st.session_state["last_question"] != user_question:
+        st.session_state["last_question"] = user_question
+        if "response" in st.session_state:
+            del st.session_state["response"]
+    
     if st.button("Antwort generieren") and user_question:
         with st.spinner("H[ai]di überlegt..."):
             # Show the animated GIF while waiting for the response
             image_placeholder.image(GIF_PATH, caption="H[ai]di überlegt...", use_container_width=False)
     
             # Simulate delay for response generation (replace with actual processing time)
-            time.sleep(3)  # Adjust this for your actual response time
+            time.sleep(3)
     
             # Generate the response after the waiting time
             response = generate_response(user_question)
     
             # Show the static image again after the animation
             image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
-
+    
             # Save the response to session state so it persists outside the block
             st.session_state["response"] = response
             
@@ -170,6 +177,7 @@ def main():
     # Separate "Speak it!" button outside the response generation block.
     if "response" in st.session_state and st.button("Vorlesen", key="speak_button"):
         speak_text(st.session_state["response"])
+
 
 
 if __name__ == "__main__":
