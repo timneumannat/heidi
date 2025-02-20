@@ -32,19 +32,23 @@ st.set_page_config(page_title="Ask H[ai]di")
 # Login Page
 # =============================================================================
 def login_page():
-    if not st.session_state.get("logged_in", False):
+    # Initialize the login flag in session state if not already set
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+
+    # If not logged in, show the login form
+    if not st.session_state["logged_in"]:
         st.title("Login")
         password = st.text_input("Password", type="password")
-        correct_password = st.secrets["password"]["password"]
         if st.button("Login"):
-            # Compare with the correct password stored in your secrets file.
-            if password == correct_password:
+            if password == st.secrets["password"]["password"]:
                 st.session_state["logged_in"] = True
                 st.success("Logged in successfully!")
             else:
                 st.error("Incorrect password.")
-        # Stop execution here if not logged in.
-        st.stop()
+        # Stop further execution if not logged in
+        if not st.session_state["logged_in"]:
+            st.stop()
 
 
 # =============================================================================
