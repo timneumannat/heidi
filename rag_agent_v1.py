@@ -144,19 +144,12 @@ def generate_response(user_question):
 
 def get_user_question(api_key):
     """
-    Displays a radio button to choose between text and voice input, then returns the user's question.
-    If a new question is entered, clears any stored response from session state.
-    
-    Parameters:
-        api_key (str): The API key used for voice transcription.
-    
-    Returns:
-        str: The user's question from either text input or voice transcription.
+    Displays a radio button to select input mode and returns a tuple:
+    (user_question, input_mode), where user_question is the question obtained
+    from text input or voice transcription.
     """
-    # Choose the input method: Text (default) or Sprache (voice)
     input_mode = st.radio("Eingabemodus auswählen:", options=["Text", "Sprache"], index=0, horizontal=True)
     
-    # Depending on the selected mode, show either the text area or the voice recorder.
     if input_mode == "Text":
         user_question_text = st.text_area("Frage eingeben:")
         user_question = user_question_text
@@ -174,8 +167,8 @@ def get_user_question(api_key):
         st.session_state["last_question"] = user_question
         if "response" in st.session_state:
             del st.session_state["response"]
-            
-    return user_question
+    
+    return user_question, input_mode
 
 
 # =============================================================================
@@ -195,7 +188,7 @@ def main():
     image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
 
     # Get the user input via text or audio
-    user_question = get_user_question(OPENAI_API_KEY)
+    user_question, input_mode = get_user_question(OPENAI_API_KEY)
     
     if st.button("Antwort generieren") and user_question:
         with st.spinner("H[ai]di überlegt..."):
@@ -217,10 +210,9 @@ def main():
     # Always display the response if it's stored in session state.
     if "response" in st.session_state:
         st.write(st.session_state["response"])
-    
-    # Separate "Speak it!" button outside the response generation block.
-    if "response" in st.session_state and st.button("Vorlesen", key="speak_button"):
-        speak_text(st.session_state["response"])
+        # If input mode was voice ("Sprache"), automatically play back the answer.
+        if input_mode == "Sprache":
+            speak_text(st.session_state["response"])
 
 
 
