@@ -52,7 +52,7 @@ def text_to_speech(text):
     Convert text to speech using gTTS in German.
     """
     try:
-        tts = gTTS(text, lang="de")
+        tts = gTTS(text, lang="de", slow=False)
         audio_buffer = BytesIO()
         tts.write_to_fp(audio_buffer)
         audio_buffer.seek(0)
