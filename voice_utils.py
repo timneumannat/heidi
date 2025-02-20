@@ -38,7 +38,7 @@ def record_and_transcribe(api_key):
     """
     Record a voice message using Streamlit's built-in audio input and transcribe it.
     """
-    audio_value = st.experimental_audio_input("Frage per Sprache aufnehmen")
+    audio_value = st.audio_input("Frage per Sprache aufnehmen")
     if audio_value is not None:
         audio_bytes = audio_value.read()
         transcript = transcribe_audio_bytes(audio_bytes, api_key)
