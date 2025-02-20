@@ -32,23 +32,19 @@ st.set_page_config(page_title="Ask H[ai]di")
 # Login Page
 # =============================================================================
 def login_page():
-    if "logged_in" not in st.session_state:
-        st.session_state["logged_in"] = False
-    if not st.session_state["logged_in"]:
+    if not st.session_state.get("logged_in", False):
         st.title("Login")
         password = st.text_input("Password", type="password")
         correct_password = st.secrets["password"]["password"]
         if st.button("Login"):
-            # The correct password is stored in st.secrets["password"]
+            # Compare with the correct password stored in your secrets file.
             if password == correct_password:
                 st.session_state["logged_in"] = True
                 st.success("Logged in successfully!")
-                st.experimental_rerun()  # Reload the app after successful login
             else:
                 st.error("Incorrect password.")
+        # Stop execution here if not logged in.
         st.stop()
-
-login_page()  # Stop app execution if not logged in
 
 
 # =============================================================================
@@ -137,6 +133,7 @@ def generate_response(user_question):
 # Main App
 # =============================================================================
 def main():
+    login_page()
     # st.set_page_config(page_title="Ask H[ai]di")
     st.header("Ask H[ai]di")
     
