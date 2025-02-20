@@ -141,6 +141,43 @@ def generate_response(user_question):
     qa_chain = LLMChain(llm=llm, prompt=chat_prompt)
     return qa_chain.run(context=context.strip(), question=user_question)
 
+
+def get_user_question(api_key):
+    """
+    Displays a radio button to choose between text and voice input, then returns the user's question.
+    If a new question is entered, clears any stored response from session state.
+    
+    Parameters:
+        api_key (str): The API key used for voice transcription.
+    
+    Returns:
+        str: The user's question from either text input or voice transcription.
+    """
+    # Choose the input method: Text (default) or Sprache (voice)
+    input_mode = st.radio("Eingabemodus auswählen:", options=["Text", "Sprache"], index=0, horizontal=True)
+    
+    # Depending on the selected mode, show either the text area or the voice recorder.
+    if input_mode == "Text":
+        user_question_text = st.text_area("Frage eingeben:")
+        user_question = user_question_text
+    elif input_mode == "Sprache":
+        transcript = record_and_transcribe(api_key)
+        if transcript:
+            st.session_state["user_question"] = transcript
+            st.success("Transkription: " + transcript)
+            user_question = transcript
+        else:
+            user_question = ""
+            
+    # Clear previous response if a new question is entered.
+    if "last_question" not in st.session_state or st.session_state["last_question"] != user_question:
+        st.session_state["last_question"] = user_question
+        if "response" in st.session_state:
+            del st.session_state["response"]
+            
+    return user_question
+
+
 # =============================================================================
 # Main App
 # =============================================================================
@@ -157,29 +194,8 @@ def main():
     image_placeholder = st.empty()
     image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
 
-    
-    # Choose the input method: Text (default) or Sprache (voice)
-    input_mode = st.radio("Eingabemodus auswählen:", options=["Text", "Sprache"], index=0, horizontal=True)
-    
-    # Depending on the selected mode, show either the text area or the voice recorder.
-    if input_mode == "Text":
-        user_question_text = st.text_area("Frage eingeben:")
-        user_question = user_question_text
-    elif input_mode == "Sprache":
-        transcript = record_and_transcribe(OPENAI_API_KEY)
-        if transcript:
-            st.session_state["user_question"] = transcript
-            st.success("Transkription: " + transcript)
-            user_question = transcript
-        else:
-            user_question = ""
-            
-    # Clear previous response if a new question is entered.
-    if "last_question" not in st.session_state or st.session_state["last_question"] != user_question:
-        st.session_state["last_question"] = user_question
-        if "response" in st.session_state:
-            del st.session_state["response"]
-
+    # Get the user input via text or audio
+    user_question = get_user_question(OPENAI_API_KEY)
     
     if st.button("Antwort generieren") and user_question:
         with st.spinner("H[ai]di überlegt..."):
