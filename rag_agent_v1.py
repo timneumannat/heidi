@@ -169,7 +169,6 @@ def main():
     # Separate "Speak it!" button outside the response generation block
     if "response" in st.session_state:
         if st.button("Speak it!", key="speak_button"):
-            st.write(response)
             speak_text(st.session_state["response"])
 
 
