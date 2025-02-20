@@ -139,12 +139,10 @@ def main():
 user_question_text = st.text_area("Frage eingeben:")
 
 # Voice input section below the text input
-st.write("Oder sprechen Sie Ihre Frage:")
-if st.button("Aufnehmen"):
-    transcript = record_and_transcribe(OPENAI_API_KEY)
-    if transcript:
-        st.session_state["user_question"] = transcript
-        st.success("Transkription: " + transcript)
+transcript = record_and_transcribe(OPENAI_API_KEY)
+if transcript:
+    st.session_state["user_question"] = transcript
+    st.success("Transkription: " + transcript)
     
     # Use recorded transcript if available; otherwise, use text input.
     user_question = st.session_state.get("user_question", "") or user_question_text
