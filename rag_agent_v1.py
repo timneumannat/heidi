@@ -44,6 +44,7 @@ def login_page():
                 st.success("Logged in successfully!")
                 st.experimental_rerun()  # Reload the app after successful login
             else:
+                st.write(st.secrets["password"])
                 st.error("Incorrect password.")
         st.stop()
 
