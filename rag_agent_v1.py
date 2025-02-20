@@ -135,17 +135,16 @@ def main():
     image_placeholder = st.empty()
     image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
     
-    # Two-column layout: one for text input, one for voice input
-    col1, col2 = st.columns(2)
-    with col1:
-        user_question_text = st.text_area("Frage eingeben:")
-    with col2:
-        st.write("Oder sprechen Sie Ihre Frage:")
-        if st.button("Aufnehmen"):
-            transcript = record_and_transcribe(OPENAI_API_KEY)
-            if transcript:
-                st.session_state["user_question"] = transcript
-                st.success("Transkription: " + transcript)
+# Text input for the question
+user_question_text = st.text_area("Frage eingeben:")
+
+# Voice input section below the text input
+st.write("Oder sprechen Sie Ihre Frage:")
+if st.button("Aufnehmen"):
+    transcript = record_and_transcribe(OPENAI_API_KEY)
+    if transcript:
+        st.session_state["user_question"] = transcript
+        st.success("Transkription: " + transcript)
     
     # Use recorded transcript if available; otherwise, use text input.
     user_question = st.session_state.get("user_question", "") or user_question_text
