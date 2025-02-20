@@ -32,28 +32,24 @@ st.set_page_config(page_title="Ask H[ai]di")
 # Login Page
 # =============================================================================
 def login_page():
-    # Initialize logged_in state if not set
+    # Initialize logged_in state if not set.
     if "logged_in" not in st.session_state:
         st.session_state["logged_in"] = False
 
-    # This function checks the password whenever the text input changes.
-    def check_password():
-        if st.button("Login"):
-            if st.session_state.get("password_input", "") == st.secrets["password"]["password"]:
-                st.session_state["logged_in"] = True
-            else:
-                st.error("Incorrect password.")
-                st.session_state["logged_in"] = False
-
     if not st.session_state["logged_in"]:
         st.title("Login")
-        # The password field triggers check_password() on every change.
-        st.text_input("Password", type="password", key="password_input", on_change=check_password)
-        # Stop further execution if the user is not logged in.
+        # Password input field.
+        password = st.text_input("Password", type="password", key="password_input")
+        # Login button.
+        if st.button("Login"):
+            if password == st.secrets["password"]["password"]:
+                st.session_state["logged_in"] = True
+                st.success("Logged in successfully!")
+            else:
+                st.error("Incorrect password.")
+        # Prevent further app execution if not logged in.
         if not st.session_state["logged_in"]:
             st.stop()
-
-
 
 
 # =============================================================================
