@@ -25,6 +25,8 @@ from langchain.vectorstores import FAISS
 # Import voice functions from voice_utils.py
 from voice_utils import record_and_transcribe, speak_text
 
+st.set_page_config(page_title="Ask H[ai]di")
+
 # Unkomment when pushing... 
 OPENAI_API_KEY = st.secrets["openai"]["api_key"]
 
@@ -122,7 +124,7 @@ def generate_response(user_question):
 # Main App
 # =============================================================================
 def main():
-    st.set_page_config(page_title="Ask H[ai]di")
+    #st.set_page_config(page_title="Ask H[ai]di")
     st.header("Ask H[ai]di")
     
     # Load the knowledge base if not already loaded
