@@ -32,26 +32,26 @@ st.set_page_config(page_title="Ask H[ai]di")
 # Login Page
 # =============================================================================
 def login_page():
-    # Initialize the logged_in state if not set.
+    # Uncomment the following line if you want to reset the login on every refresh.
+    # st.session_state["logged_in"] = False
+
+    # Initialize the login flag if it doesn't exist.
     if "logged_in" not in st.session_state:
         st.session_state["logged_in"] = False
 
-    # Create a container for the login UI.
-    login_container = st.empty()
-
+    # If the user is not logged in, show the login UI.
     if not st.session_state["logged_in"]:
-        with login_container.container():
-            st.title("Login")
-            password = st.text_input("Password", type="password", key="password_input")
-            if st.button("Login"):
-                if password == st.secrets["password"]["password"]:
-                    st.session_state["logged_in"] = True
-                    st.success("Logged in successfully!")
-                else:
-                    st.error("Incorrect password.")
-    # Once logged in, clear the login container so the UI disappears.
-    if st.session_state["logged_in"]:
-        login_container.empty()
+        st.title("Login")
+        password = st.text_input("Password", type="password", key="password_input")
+        if st.button("Login"):
+            if password == st.secrets["password"]["password"]:
+                st.session_state["logged_in"] = True
+            else:
+                st.error("Incorrect password.")
+        # If still not logged in, stop execution so that only the login page is shown.
+        if not st.session_state.get("logged_in", False):
+            st.stop()
+
 
 
 
