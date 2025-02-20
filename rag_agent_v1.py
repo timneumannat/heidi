@@ -27,23 +27,35 @@ from voice_utils import record_and_transcribe, speak_text
 
 st.set_page_config(page_title="Ask H[ai]di")
 
+
+# =============================================================================
+# Login Page
+# =============================================================================
+def login_page():
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+    if not st.session_state["logged_in"]:
+        st.title("Login")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            # The correct password is stored in st.secrets["password"]
+            if password == st.secrets["password"]:
+                st.session_state["logged_in"] = True
+                st.success("Logged in successfully!")
+                st.experimental_rerun()  # Reload the app after successful login
+            else:
+                st.error("Incorrect password.")
+        st.stop()
+
+login_page()  # Stop app execution if not logged in
+
+
+# =============================================================================
+# Imports and Global Variables
+# =============================================================================
 # Unkomment when pushing... 
 OPENAI_API_KEY = st.secrets["openai"]["api_key"]
 
-# =============================================================================
-# Custom CSS for Small Button
-# =============================================================================
-st.markdown(
-    """
-    <style>
-    div.stButton > button {
-        padding: 0.25em 0.5em;
-        font-size: 0.8em;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 # =============================================================================
 # Paths and Variables
