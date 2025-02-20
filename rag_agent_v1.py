@@ -37,14 +37,14 @@ def login_page():
     if not st.session_state["logged_in"]:
         st.title("Login")
         password = st.text_input("Password", type="password")
+        correct_password = st.secrets["password"]["password"]
         if st.button("Login"):
             # The correct password is stored in st.secrets["password"]
-            if password == st.secrets["password"]:
+            if password == correct_password:
                 st.session_state["logged_in"] = True
                 st.success("Logged in successfully!")
                 st.experimental_rerun()  # Reload the app after successful login
             else:
-                st.write(st.secrets["password"])
                 st.error("Incorrect password.")
         st.stop()
 
