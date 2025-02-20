@@ -173,12 +173,13 @@ def main():
             user_question = transcript
         else:
             user_question = ""
+            
+    # Clear previous response if a new question is entered.
+    if "last_question" not in st.session_state or st.session_state["last_question"] != user_question:
+        st.session_state["last_question"] = user_question
+        if "response" in st.session_state:
+            del st.session_state["response"]
 
-# Clear previous response if a new question is entered.
-if "last_question" not in st.session_state or st.session_state["last_question"] != user_question:
-    st.session_state["last_question"] = user_question
-    if "response" in st.session_state:
-        del st.session_state["response"]
     
     if st.button("Antwort generieren") and user_question:
         with st.spinner("H[ai]di überlegt..."):
