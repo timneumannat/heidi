@@ -156,24 +156,29 @@ def main():
     # Placeholder for the image (static or animated)
     image_placeholder = st.empty()
     image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
-    
-    # Text input for the question
-    user_question_text = st.text_area("Frage eingeben:")
-    
-    # Voice input section below the text input
-    transcript = record_and_transcribe(OPENAI_API_KEY)
-    if transcript:
-        st.session_state["user_question"] = transcript
-        st.success("Transkription: " + transcript)
-        
-    # Use recorded transcript if available; otherwise, use text input.
-    user_question = st.session_state.get("user_question", "") or user_question_text
 
-    # Clear previous response if a new question is entered.
-    if "last_question" not in st.session_state or st.session_state["last_question"] != user_question:
-        st.session_state["last_question"] = user_question
-        if "response" in st.session_state:
-            del st.session_state["response"]
+    
+    # Choose the input method: Text (default) or Sprache (voice)
+    input_mode = st.radio("Eingabemodus auswählen:", options=["Text", "Sprache"], index=0, horizontal=True)
+    
+    # Depending on the selected mode, show either the text area or the voice recorder.
+    if input_mode == "Text":
+        user_question_text = st.text_area("Frage eingeben:")
+        user_question = user_question_text
+    elif input_mode == "Sprache":
+        transcript = record_and_transcribe(OPENAI_API_KEY)
+        if transcript:
+            st.session_state["user_question"] = transcript
+            st.success("Transkription: " + transcript)
+            user_question = transcript
+        else:
+            user_question = ""
+
+# Clear previous response if a new question is entered.
+if "last_question" not in st.session_state or st.session_state["last_question"] != user_question:
+    st.session_state["last_question"] = user_question
+    if "response" in st.session_state:
+        del st.session_state["response"]
     
     if st.button("Antwort generieren") and user_question:
         with st.spinner("H[ai]di überlegt..."):
