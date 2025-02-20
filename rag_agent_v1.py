@@ -2,41 +2,51 @@
 """
 Created on Fri Feb 14 16:57:32 2025
 
-@author: Wolfgang Reuter
-
-
 run with: streamlit run rag_agent_v1.py 
-
 """
 
 # =============================================================================
 # Imports
 # =============================================================================
-
 import streamlit as st
-
-# Unkomment when pushing... 
-OPENAI_API_KEY = st.secrets["openai"]["api_key"]
-
 import os
 from pathlib import Path
+import time
+import json
+import tiktoken
+
+import openai
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain.chains import LLMChain
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
-import tiktoken
-import json
-import time
 
-# Get the current working directory (will be the project root in Streamlit Cloud)
-project_root = Path(os.getcwd())
+# Import voice functions from voice_utils.py
+from voice_utils import record_and_transcribe, speak_text
+
+# Unkomment when pushing... 
+OPENAI_API_KEY = st.secrets["openai"]["api_key"]
+
+# =============================================================================
+# Custom CSS for Small Button
+# =============================================================================
+st.markdown(
+    """
+    <style>
+    div.stButton > button {
+        padding: 0.25em 0.5em;
+        font-size: 0.8em;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # =============================================================================
 # Paths and Variables
 # =============================================================================
-
-# Define constants (need to correspond to stored FAISS vectorbases)
+project_root = Path(os.getcwd())
 CHUNK_SIZE = 800
 OVERLAP = 200
 MAX_TOKENS = 4096
@@ -47,12 +57,13 @@ METADATA_STORAGE_PATH = project_root / "data" / f"metadata_{CHUNK_SIZE}_{OVERLAP
 IMAGE_PATH = project_root / "data" / "heidi_1.png"
 GIF_PATH = project_root / "data" / "new_animation.gif"
 
-# Function to calculate token length
+# =============================================================================
+# Helper Functions
+# =============================================================================
 def calculate_token_length(text, model_name="gpt-4"):
     encoding = tiktoken.encoding_for_model(model_name)
     return len(encoding.encode(text))
 
-# System prompt
 system_prompt = """
 Du bist ein Concierge in einem Hotel, der Gästen Auskunft über Restaurants 
 in der Umgebung gibt. Du kennst die Gastronomie in der Gegend wie Deine 
@@ -64,8 +75,8 @@ Wichtige Regeln:
   "Natürlich, ich empfehle Ihnen gerne ein passendes Restaurant..."
   Diese Begrüßung darf **nur am Anfang der gesamten Antwort stehen**, 
   nicht vor jeder einzelnen Empfehlung.
-- Du empfiehlst maximal zwei Restaurants und ""Du nennst die Restaurants, die 
-  Du empfiehlst explizit"".
+- Du empfiehlst maximal zwei Restaurants und du nennst die Restaurants, die 
+  Du empfiehlst, explizit.
 - Du gibst Deine Empfehlung in einem Fließtext mit vollständigen Sätzen.  
   Das aus Deiner Sicht beste Restaurant kommt zuerst.
 - Falls es keine passende Empfehlung gibt, sag dem Gast das **direkt**, 
@@ -76,16 +87,10 @@ Wichtige Regeln:
 
 def load_data(FAISS_STORAGE_PATH, METADATA_STORAGE_PATH):
     """
-    TODO: Rewrite comments!!!
-    
-    Extracts and splits text from a PDF into embeddings, stores in session state."""
-    
-    # Initialize the same embedding model used for storage
+    Loads the FAISS knowledge base and stores it in session state.
+    """
     embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-    
-    knowledge_base = FAISS.load_local(FAISS_STORAGE_PATH, embeddings, 
-                                      allow_dangerous_deserialization=True)
-    
+    knowledge_base = FAISS.load_local(FAISS_STORAGE_PATH, embeddings, allow_dangerous_deserialization=True)
     st.session_state["knowledge_base"] = knowledge_base
     st.success("H[ai]di ist bereit!")
 
@@ -104,7 +109,7 @@ def generate_response(user_question):
             token_count += doc_tokens
         else:
             break
-    
+
     system_message = SystemMessagePromptTemplate.from_template(system_prompt)
     human_message = HumanMessagePromptTemplate.from_template("Kontext:\n{context}\n\nFrage: {question}")
     chat_prompt = ChatPromptTemplate.from_messages([system_message, human_message])
@@ -113,40 +118,46 @@ def generate_response(user_question):
     qa_chain = LLMChain(llm=llm, prompt=chat_prompt)
     return qa_chain.run(context=context.strip(), question=user_question)
 
+# =============================================================================
+# Main App
+# =============================================================================
 def main():
     st.set_page_config(page_title="Ask H[ai]di")
     st.header("Ask H[ai]di")
-
-    # Check if knowledge base is loaded
+    
+    # Load the knowledge base if not already loaded
     if "knowledge_base" not in st.session_state:
         load_data(FAISS_STORAGE_PATH, METADATA_STORAGE_PATH)
-
-    # Display the static image (always visible initially)
-    image_placeholder = st.empty()  # Single placeholder for both static image and animation
-
-    # Show the static image initially
+    
+    # Placeholder for the image (static or animated)
+    image_placeholder = st.empty()
     image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
-
-    user_question = st.text_area("Frage eingeben:")
+    
+    # Two-column layout: one for text input, one for voice input
+    col1, col2 = st.columns(2)
+    with col1:
+        user_question_text = st.text_area("Frage eingeben:")
+    with col2:
+        st.write("Oder sprechen Sie Ihre Frage:")
+        if st.button("Aufnehmen"):
+            transcript = record_and_transcribe(OPENAI_API_KEY)
+            if transcript:
+                st.session_state["user_question"] = transcript
+                st.success("Transkription: " + transcript)
+    
+    # Use recorded transcript if available; otherwise, use text input.
+    user_question = st.session_state.get("user_question", "") or user_question_text
     if st.button("Antwort generieren") and user_question:
         with st.spinner("H[ai]di überlegt..."):
-            # Show the animated GIF while waiting for the response
+            # Show animated GIF while processing
             image_placeholder.image(GIF_PATH, caption="H[ai]di überlegt...", use_container_width=False)
-
-            # Simulate delay for response generation (replace with actual processing time)
-            time.sleep(3)  # Adjust this for your actual response time
-
-            # Generate the response after the waiting time
+            time.sleep(3)  # Simulate delay; replace with actual processing time if needed
             response = generate_response(user_question)
-
-            # Show the static image again after the animation
             image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
-
-            # Display the generated response
             st.write(response)
-
-
-
+            # Small button to speak the response
+            if st.button("Speak it!", key="speak_button"):
+                speak_text(response)
 
 if __name__ == "__main__":
     main()
