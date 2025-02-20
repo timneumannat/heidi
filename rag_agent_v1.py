@@ -135,37 +135,37 @@ def main():
     image_placeholder = st.empty()
     image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
     
-# Text input for the question
-user_question_text = st.text_area("Frage eingeben:")
-
-# Voice input section below the text input
-transcript = record_and_transcribe(OPENAI_API_KEY)
-if transcript:
-    st.session_state["user_question"] = transcript
-    st.success("Transkription: " + transcript)
+    # Text input for the question
+    user_question_text = st.text_area("Frage eingeben:")
     
-# Use recorded transcript if available; otherwise, use text input.
-user_question = st.session_state.get("user_question", "") or user_question_text
-if st.button("Antwort generieren") and user_question:
-    with st.spinner("H[ai]di überlegt..."):
-        # Show the animated GIF while waiting for the response
-        image_placeholder.image(GIF_PATH, caption="H[ai]di überlegt...", use_container_width=False)
-
-        # Simulate delay for response generation (replace with actual processing time)
-        time.sleep(3)  # Adjust this for your actual response time
-
-        # Generate the response after the waiting time
-        response = generate_response(user_question)
-
-        # Show the static image again after the animation
-        image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
+    # Voice input section below the text input
+    transcript = record_and_transcribe(OPENAI_API_KEY)
+    if transcript:
+        st.session_state["user_question"] = transcript
+        st.success("Transkription: " + transcript)
         
-        # Display the generated response
-        st.write(response)
-        
-        # Small button to speak the response
-        if st.button("Speak it!", key="speak_button"):
-            speak_text(response)
+    # Use recorded transcript if available; otherwise, use text input.
+    user_question = st.session_state.get("user_question", "") or user_question_text
+    if st.button("Antwort generieren") and user_question:
+        with st.spinner("H[ai]di überlegt..."):
+            # Show the animated GIF while waiting for the response
+            image_placeholder.image(GIF_PATH, caption="H[ai]di überlegt...", use_container_width=False)
+    
+            # Simulate delay for response generation (replace with actual processing time)
+            time.sleep(3)  # Adjust this for your actual response time
+    
+            # Generate the response after the waiting time
+            response = generate_response(user_question)
+    
+            # Show the static image again after the animation
+            image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
+            
+            # Display the generated response
+            st.write(response)
+            
+            # Small button to speak the response
+            if st.button("Speak it!", key="speak_button"):
+                speak_text(response)
 
 
 if __name__ == "__main__":
