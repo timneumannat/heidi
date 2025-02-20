@@ -162,14 +162,14 @@ def main():
 
             # Save the response to session state so it persists outside the block
             st.session_state["response"] = response
-
-            # Display the generated response
-            st.write(st.session_state["response"])
             
-    # Separate "Speak it!" button outside the response generation block
+    # Always display the response if it's stored in session state.
     if "response" in st.session_state:
-        if st.button("Speak it!", key="speak_button"):
-            speak_text(st.session_state["response"])
+        st.write(st.session_state["response"])
+    
+    # Separate "Speak it!" button outside the response generation block.
+    if "response" in st.session_state and st.button("Speak it!", key="speak_button"):
+        speak_text(st.session_state["response"])
 
 
 if __name__ == "__main__":
