@@ -159,16 +159,17 @@ def main():
     
             # Show the static image again after the animation
             image_placeholder.image(IMAGE_PATH, caption="H[ai]di", use_container_width=False)
-            
-            # Display the generated response
-            st.write(response)
 
             # Save the response to session state so it persists outside the block
             st.session_state["response"] = response
+
+            # Display the generated response
+            st.write(st.session_state["response"])
             
     # Separate "Speak it!" button outside the response generation block
     if "response" in st.session_state:
         if st.button("Speak it!", key="speak_button"):
+            st.write(response)
             speak_text(st.session_state["response"])
 
 
