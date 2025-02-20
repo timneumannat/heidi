@@ -10,3 +10,5 @@ openai
 pillow
 streamlit
 faiss-cpu
+streamlit-bokeh-events
+gTTS
