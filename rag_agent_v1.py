@@ -32,37 +32,31 @@ st.set_page_config(page_title="Ask H[ai]di")
 # Login Page
 # =============================================================================
 def login_page():
-    # Initialize logged_in and login_error state if not set.
+    # Initialize logged_in state and error message if not set.
     if "logged_in" not in st.session_state:
         st.session_state["logged_in"] = False
     if "login_error" not in st.session_state:
         st.session_state["login_error"] = ""
 
-    # Define a function to check the password when the login button is pressed.
-    def check_password():
-        if st.session_state.get("password_input", "") == st.secrets["password"]["password"]:
+    # Callback function that is triggered when the Login button is clicked.
+    def on_login():
+        password = st.session_state.get("password_input", "")
+        if password == st.secrets["password"]["password"]:
             st.session_state["logged_in"] = True
             st.session_state["login_error"] = ""
         else:
-            st.session_state["login_error"] = "Incorrect password."
             st.session_state["logged_in"] = False
+            st.session_state["login_error"] = "Incorrect password."
 
+    # If not logged in, display the login UI.
     if not st.session_state["logged_in"]:
         st.title("Login")
-        # The password field (without on_change).
         st.text_input("Password", type="password", key="password_input")
-        # Login button triggers check_password() when pressed.
-        if st.button("Login"):
-            check_password()
-            if not st.session_state["logged_in"]:
-                st.error(st.session_state["login_error"])
-        # If not logged in, stop execution so that only the login page is visible.
+        st.button("Login", on_click=on_login)
+        if st.session_state["login_error"]:
+            st.error(st.session_state["login_error"])
         if not st.session_state["logged_in"]:
             st.stop()
-
-
-
-
 
 
 # =============================================================================
